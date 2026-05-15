@@ -5,6 +5,7 @@ let stars = [];
 let shootingStars = [];
 const numStars = 360;
 let animationId;
+const centerFalloffWeight = 0.75;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -15,7 +16,9 @@ function resizeCanvas() {
 function initStars() {
   stars = Array.from({ length: numStars }, () => ({
     angle: Math.random() * Math.PI * 2,
-    radius: Math.random() * Math.sqrt(canvas.width ** 2 + canvas.height ** 2),
+    radius:
+      Math.pow(Math.random(), 0.5 / centerFalloffWeight) *
+      Math.sqrt(canvas.width ** 2 + canvas.height ** 2),
     speed: Math.random() * 0.0003 + 0.00015,
     size: Math.random() * 1.2 + 0.5,
   }));
@@ -38,8 +41,9 @@ function animate() {
   const centerX = canvas.width;
   const centerY = canvas.height;
 
-  ctx.fillStyle = "#161618";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const colorBase = "255, 255, 255";
 
   // Stars orbiting
   stars.forEach((star, i) => {
@@ -47,10 +51,10 @@ function animate() {
     const x = centerX + star.radius * Math.cos(star.angle);
     const y = centerY + star.radius * Math.sin(star.angle);
 
-    const flicker = 0.4 + Math.abs(Math.sin(Date.now() * 0.0015 + i)) * 0.5;
+    const flicker = 0.25 + Math.abs(Math.sin(Date.now() * 0.0015 + i)) * 0.15;
 
     ctx.beginPath();
-    ctx.fillStyle = `rgba(255, 255, 255, ${flicker})`;
+    ctx.fillStyle = `rgba(${colorBase}, ${flicker})`;
     ctx.arc(x, y, star.size, 0, Math.PI * 2);
     ctx.fill();
   });
@@ -67,8 +71,8 @@ function animate() {
       s.x - s.vx * 35,
       s.y - s.vy * 35
     );
-    grad.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
-    grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+    grad.addColorStop(0, `rgba(${colorBase}, ${opacity * 0.75})`);
+    grad.addColorStop(1, `rgba(${colorBase}, 0)`);
     ctx.strokeStyle = grad;
     ctx.lineWidth = 2;
     ctx.beginPath();
